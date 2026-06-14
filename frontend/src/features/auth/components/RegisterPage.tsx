@@ -32,7 +32,7 @@ export function RegisterPage() {
     },
   });
 
-  const onSubmit = ({ confirmPassword, ...input }: RegisterInput) =>
+  const onSubmit = ({ confirmPassword: _confirmPassword, ...input }: RegisterInput) =>
     registerUser({ variables: { input } });
 
   return (
