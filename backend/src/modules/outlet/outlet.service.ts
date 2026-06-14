@@ -93,7 +93,7 @@ export class OutletService {
       longitude: input.longitude,
       phone: input.phone,
       email: input.email,
-      openingHours: input.openingHours as Prisma.InputJsonValue,
+      openingHours: input.openingHours as unknown as Prisma.InputJsonValue,
       franchise: { connect: { id: input.franchiseId } },
       manager: input.managerId ? { connect: { id: input.managerId } } : undefined,
     });
@@ -127,7 +127,7 @@ export class OutletService {
     const { managerId, openingHours, ...rest } = input;
     const updated = await outletRepository.update(id, {
       ...rest,
-      openingHours: openingHours as Prisma.InputJsonValue,
+      openingHours: openingHours as unknown as Prisma.InputJsonValue,
       manager: managerId ? { connect: { id: managerId } } : undefined,
     });
 

@@ -51,7 +51,7 @@ export class AuthRepository {
 
   async logActivity(userId: string, action: string, resource: string, details?: Record<string, unknown>): Promise<void> {
     await prisma.activityLog.create({
-      data: { userId, action, resource, details },
+      data: { userId, action, resource, details: details as unknown as Prisma.InputJsonValue },
     });
   }
 }

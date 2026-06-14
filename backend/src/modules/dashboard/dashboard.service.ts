@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '../../config/database';
 import { getCache, setCache, CACHE_TTL } from '../../config/redis';
 import { AuthUser } from '../../types';
@@ -8,7 +9,7 @@ export class DashboardService {
     const cached = await getCache(cacheKey);
     if (cached) return cached;
 
-    const outletWhere = franchiseId ? { franchiseId } : {};
+    const outletWhere: Prisma.OutletWhereInput = franchiseId ? { franchiseId } : {};
 
     const [
       totalOutlets,
@@ -98,7 +99,7 @@ export class DashboardService {
   async getRevenueAnalytics(user: AuthUser, franchiseId?: string, startDate?: Date, endDate?: Date, granularity = 'day') {
     const start = startDate ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const end = endDate ?? new Date();
-    const outletWhere = franchiseId ? { franchiseId } : {};
+    const outletWhere: Prisma.OutletWhereInput = franchiseId ? { franchiseId } : {};
 
     const [currentRevenues, outlets] = await Promise.all([
       prisma.revenue.findMany({
@@ -164,7 +165,7 @@ export class DashboardService {
     });
   }
 
-  private async getRevenueSum(outletWhere: Record<string, unknown>, range: { start: Date; end: Date }) {
+  private async getRevenueSum(outletWhere: Prisma.OutletWhereInput, range: { start: Date; end: Date }) {
     const result = await prisma.revenue.aggregate({
       where: { outlet: outletWhere, date: { gte: range.start, lte: range.end } },
       _sum: { amount: true },

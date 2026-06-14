@@ -22,7 +22,7 @@ export async function getCache<T>(key: string): Promise<T | null> {
   return data ? JSON.parse(data) : null;
 }
 
-export async function setCache<T>(key: string, value: T, ttl = CACHE_TTL.MEDIUM): Promise<void> {
+export async function setCache<T>(key: string, value: T, ttl: number = CACHE_TTL.MEDIUM): Promise<void> {
   await redis.setex(key, ttl, JSON.stringify(value));
 }
 
