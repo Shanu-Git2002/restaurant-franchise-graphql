@@ -1,0 +1,125 @@
+enum ReviewSource {
+  GOOGLE
+  WHATSAPP
+  INTERNAL
+  FACEBOOK
+  ZOMATO
+  SWIGGY
+}
+
+enum Sentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
+type Review {
+  id: ID!
+  outlet: Outlet!
+  source: ReviewSource!
+  rating: Float!
+  content: String
+  authorName: String!
+  authorEmail: String
+  authorPhone: String
+  authorPhoto: String
+  sentiment: Sentiment!
+  isResponded: Boolean!
+  response: String
+  respondedAt: DateTime
+  reviewDate: DateTime!
+  externalId: String
+  tags: [String!]!
+  isVerified: Boolean!
+  helpfulCount: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ReviewStatistics {
+  totalReviews: Int!
+  averageRating: Float!
+  positiveCount: Int!
+  neutralCount: Int!
+  negativeCount: Int!
+  responseRate: Float!
+  ratingDistribution: [RatingBucket!]!
+  sourceDistribution: [SourceBucket!]!
+  trendData: [ReviewTrend!]!
+}
+
+type RatingBucket {
+  rating: Int!
+  count: Int!
+  percentage: Float!
+}
+
+type SourceBucket {
+  source: ReviewSource!
+  count: Int!
+  percentage: Float!
+  averageRating: Float!
+}
+
+type ReviewTrend {
+  date: String!
+  count: Int!
+  averageRating: Float!
+}
+
+type ReviewConnection {
+  data: [Review!]!
+  total: Int!
+  page: Int!
+  limit: Int!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+input ReviewFilterInput {
+  outletId: String
+  source: ReviewSource
+  sentiment: Sentiment
+  isResponded: Boolean
+  minRating: Float
+  maxRating: Float
+  startDate: DateTime
+  endDate: DateTime
+  search: String
+}
+
+input CreateReviewInput {
+  outletId: String!
+  source: ReviewSource!
+  rating: Float!
+  content: String
+  authorName: String!
+  authorEmail: String
+  authorPhone: String
+  reviewDate: DateTime!
+  externalId: String
+  tags: [String!]
+}
+
+input RespondToReviewInput {
+  reviewId: ID!
+  response: String!
+}
+
+extend type Query {
+  reviews(filter: ReviewFilterInput, sort: SortInput, pagination: PaginationInput): ReviewConnection!
+  review(id: ID!): Review
+  reviewStatistics(outletId: ID, startDate: DateTime, endDate: DateTime): ReviewStatistics!
+}
+
+extend type Mutation {
+  createReview(input: CreateReviewInput!): Review!
+  respondToReview(input: RespondToReviewInput!): Review!
+  deleteReview(id: ID!): MessageResponse!
+  importReviews(outletId: ID!, source: ReviewSource!): MessageResponse!
+}
+
+extend type Subscription {
+  newReview(outletId: ID!): Review!
+  reviewResponseAdded(outletId: ID!): Review!
+}

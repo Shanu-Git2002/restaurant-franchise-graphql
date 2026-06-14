@@ -1,0 +1,231 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  EMPLOYEE
+}
+
+enum OutletStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum ReviewSource {
+  GOOGLE
+  WHATSAPP
+  INTERNAL
+  FACEBOOK
+  ZOMATO
+  SWIGGY
+}
+
+enum Sentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
+enum Permission {
+  VIEW_DASHBOARD
+  MANAGE_OUTLETS
+  MANAGE_EMPLOYEES
+  MANAGE_REVIEWS
+  VIEW_ANALYTICS
+  EXPORT_REPORTS
+  MANAGE_SETTINGS
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  password       String
+  firstName      String
+  lastName       String
+  phone          String?
+  avatarUrl      String?
+  role           Role      @default(EMPLOYEE)
+  isActive       Boolean   @default(true)
+  isEmailVerified Boolean  @default(false)
+  lastLoginAt    DateTime?
+  passwordResetToken  String?
+  passwordResetExpiry DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  ownedFranchise  Franchise?     @relation("FranchiseOwner")
+  managedOutlets  Outlet[]       @relation("OutletManager")
+  employee        Employee?
+  refreshTokens   RefreshToken[]
+  activityLogs    ActivityLog[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+}
+
+model Franchise {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  logoUrl     String?
+  website     String?
+  phone       String?
+  email       String?
+  address     String?
+  ownerId     String   @unique
+  owner       User     @relation("FranchiseOwner", fields: [ownerId], references: [id])
+  outlets     Outlet[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([ownerId])
+  @@index([slug])
+}
+
+model Outlet {
+  id           String       @id @default(cuid())
+  name         String
+  address      String
+  city         String
+  state        String
+  country      String       @default("India")
+  postalCode   String?
+  latitude     Float?
+  longitude    Float?
+  phone        String?
+  email        String?
+  status       OutletStatus @default(ACTIVE)
+  openingHours Json?
+  franchiseId  String
+  franchise    Franchise    @relation(fields: [franchiseId], references: [id])
+  managerId    String?
+  manager      User?        @relation("OutletManager", fields: [managerId], references: [id])
+  employees    Employee[]
+  reviews      Review[]
+  reputationScores ReputationScore[]
+  revenues     Revenue[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([franchiseId])
+  @@index([managerId])
+  @@index([status])
+  @@index([city])
+}
+
+model Employee {
+  id          String       @id @default(cuid())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  outletId    String
+  outlet      Outlet       @relation(fields: [outletId], references: [id])
+  position    String
+  permissions Permission[]
+  salary      Float?
+  hiredAt     DateTime     @default(now())
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([outletId])
+  @@index([userId])
+}
+
+model Review {
+  id          String       @id @default(cuid())
+  outletId    String
+  outlet      Outlet       @relation(fields: [outletId], references: [id])
+  source      ReviewSource
+  rating      Float
+  content     String?
+  authorName  String
+  authorEmail String?
+  authorPhone String?
+  authorPhoto String?
+  sentiment   Sentiment    @default(NEUTRAL)
+  isResponded Boolean      @default(false)
+  response    String?
+  respondedAt DateTime?
+  reviewDate  DateTime
+  externalId  String?
+  tags        String[]
+  isVerified  Boolean      @default(false)
+  helpfulCount Int         @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([source, externalId])
+  @@index([outletId])
+  @@index([source])
+  @@index([rating])
+  @@index([reviewDate])
+  @@index([sentiment])
+}
+
+model ReputationScore {
+  id          String   @id @default(cuid())
+  outletId    String
+  outlet      Outlet   @relation(fields: [outletId], references: [id])
+  score       Float
+  googleScore Float?
+  whatsappScore Float?
+  internalScore Float?
+  totalReviews Int     @default(0)
+  date        DateTime @default(now())
+
+  @@index([outletId])
+  @@index([date])
+}
+
+model Revenue {
+  id        String   @id @default(cuid())
+  outletId  String
+  outlet    Outlet   @relation(fields: [outletId], references: [id])
+  amount    Float
+  date      DateTime
+  category  String?
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@index([outletId])
+  @@index([date])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  resource  String
+  resourceId String?
+  details   Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([resource])
+  @@index([createdAt])
+}

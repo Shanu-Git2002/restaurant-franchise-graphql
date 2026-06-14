@@ -1,0 +1,85 @@
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  EMPLOYEE
+}
+
+type User {
+  id: ID!
+  email: String!
+  firstName: String!
+  lastName: String!
+  fullName: String!
+  phone: String
+  avatarUrl: String
+  role: Role!
+  isActive: Boolean!
+  isEmailVerified: Boolean!
+  lastLoginAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  employee: Employee
+  managedOutlets: [Outlet!]!
+}
+
+type AuthPayload {
+  accessToken: String!
+  refreshToken: String!
+  user: User!
+}
+
+type MessageResponse {
+  success: Boolean!
+  message: String!
+}
+
+input RegisterInput {
+  email: String!
+  password: String!
+  firstName: String!
+  lastName: String!
+  phone: String
+  role: Role
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input ForgotPasswordInput {
+  email: String!
+}
+
+input ResetPasswordInput {
+  token: String!
+  password: String!
+}
+
+input ChangePasswordInput {
+  currentPassword: String!
+  newPassword: String!
+}
+
+input UpdateProfileInput {
+  firstName: String
+  lastName: String
+  phone: String
+  avatarUrl: String
+}
+
+extend type Query {
+  me: User!
+}
+
+extend type Mutation {
+  register(input: RegisterInput!): AuthPayload!
+  login(input: LoginInput!): AuthPayload!
+  logout: MessageResponse!
+  refreshToken(token: String!): AuthPayload!
+  forgotPassword(input: ForgotPasswordInput!): MessageResponse!
+  resetPassword(input: ResetPasswordInput!): MessageResponse!
+  changePassword(input: ChangePasswordInput!): MessageResponse!
+  updateProfile(input: UpdateProfileInput!): User!
+}

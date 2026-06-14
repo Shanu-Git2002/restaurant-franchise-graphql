@@ -1,0 +1,69 @@
+enum Permission {
+  VIEW_DASHBOARD
+  MANAGE_OUTLETS
+  MANAGE_EMPLOYEES
+  MANAGE_REVIEWS
+  VIEW_ANALYTICS
+  EXPORT_REPORTS
+  MANAGE_SETTINGS
+}
+
+type Employee {
+  id: ID!
+  user: User!
+  outlet: Outlet!
+  position: String!
+  permissions: [Permission!]!
+  salary: Float
+  hiredAt: DateTime!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type EmployeeConnection {
+  data: [Employee!]!
+  total: Int!
+  page: Int!
+  limit: Int!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+input CreateEmployeeInput {
+  email: String!
+  firstName: String!
+  lastName: String!
+  phone: String
+  role: Role!
+  outletId: String!
+  position: String!
+  permissions: [Permission!]
+  salary: Float
+}
+
+input UpdateEmployeeInput {
+  position: String
+  role: Role
+  permissions: [Permission!]
+  salary: Float
+  outletId: String
+}
+
+input EmployeeFilterInput {
+  search: String
+  outletId: String
+  role: Role
+  position: String
+}
+
+extend type Query {
+  employees(filter: EmployeeFilterInput, sort: SortInput, pagination: PaginationInput): EmployeeConnection!
+  employee(id: ID!): Employee
+}
+
+extend type Mutation {
+  createEmployee(input: CreateEmployeeInput!): Employee!
+  updateEmployee(id: ID!, input: UpdateEmployeeInput!): Employee!
+  deleteEmployee(id: ID!): MessageResponse!
+  updatePermissions(employeeId: ID!, permissions: [Permission!]!): Employee!
+}

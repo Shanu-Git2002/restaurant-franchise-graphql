@@ -1,0 +1,62 @@
+type DashboardStats {
+  totalOutlets: Int!
+  activeOutlets: Int!
+  totalEmployees: Int!
+  totalReviews: Int!
+  averageRating: Float!
+  totalRevenue: Float!
+  revenueGrowth: Float!
+  reviewGrowth: Float!
+  reputationScore: Float!
+}
+
+type OutletPerformance {
+  outlet: Outlet!
+  revenue: Float!
+  reviewCount: Int!
+  averageRating: Float!
+  reputationScore: Float!
+  employeeCount: Int!
+  rank: Int!
+}
+
+type RevenueData {
+  date: String!
+  amount: Float!
+  outletId: String
+  outletName: String
+}
+
+type RevenueAnalytics {
+  totalRevenue: Float!
+  previousRevenue: Float!
+  growthPercentage: Float!
+  dailyData: [RevenueData!]!
+  byOutlet: [OutletRevenueSummary!]!
+}
+
+type OutletRevenueSummary {
+  outlet: Outlet!
+  revenue: Float!
+  percentage: Float!
+}
+
+type ReputationData {
+  outletId: String!
+  outletName: String!
+  score: Float!
+  trend: Float!
+  totalReviews: Int!
+  averageRating: Float!
+}
+
+extend type Query {
+  dashboardStats(franchiseId: ID): DashboardStats!
+  outletPerformance(franchiseId: ID, limit: Int): [OutletPerformance!]!
+  revenueAnalytics(franchiseId: ID, startDate: DateTime, endDate: DateTime, granularity: String): RevenueAnalytics!
+  reputationOverview(franchiseId: ID): [ReputationData!]!
+}
+
+extend type Subscription {
+  dashboardUpdated(franchiseId: ID!): DashboardStats!
+}
